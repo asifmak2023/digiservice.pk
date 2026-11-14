@@ -211,6 +211,43 @@
     }, 3200);
   }
 
+  var themeRoot = document.documentElement;
+  var themeToggles = document.querySelectorAll('[data-theme-toggle]');
+  var themeMedia = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
+  function applyTheme(theme, persist) {
+    var isDark = theme === 'dark';
+    themeRoot.classList.toggle('dark', isDark);
+    themeRoot.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    if (persist) {
+      try { localStorage.setItem('ds-theme', isDark ? 'dark' : 'light'); } catch (e) {}
+    }
+    Array.prototype.forEach.call(themeToggles, function (btn) {
+      btn.setAttribute('aria-pressed', String(isDark));
+      btn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+    });
+  }
+
+  function readStoredTheme() {
+    try { return localStorage.getItem('ds-theme'); } catch (e) { return null; }
+  }
+
+  applyTheme(themeRoot.classList.contains('dark') ? 'dark' : 'light', false);
+
+  Array.prototype.forEach.call(themeToggles, function (btn) {
+    btn.addEventListener('click', function () {
+      applyTheme(themeRoot.classList.contains('dark') ? 'light' : 'dark', true);
+    });
+  });
+
+  if (themeMedia) {
+    var onSystemTheme = function (event) {
+      if (!readStoredTheme()) applyTheme(event.matches ? 'dark' : 'light', false);
+    };
+    if (themeMedia.addEventListener) themeMedia.addEventListener('change', onSystemTheme);
+    else if (themeMedia.addListener) themeMedia.addListener(onSystemTheme);
+  }
+
   document.querySelectorAll('[data-quote-form]').forEach(function (form) {
     form.addEventListener('submit', function (event) {
       event.preventDefault();
