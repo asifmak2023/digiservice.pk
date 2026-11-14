@@ -97,7 +97,7 @@
 
   var HERO_FRAMES = [
     { lead: 'Software that ships on time and stays', word: 'running', tail: '.' },
-    { lead: 'Digital products designed, built and', word: 'shipped', tail: ' on schedule.' },
+    { lead: 'Products designed, built and', word: 'shipped', tail: ' on schedule.' },
     { lead: 'Systems that are still', word: 'supported', tail: ' years later.' },
     { lead: 'Platforms that keep', word: 'evolving', tail: ' as you grow.' }
   ];
@@ -106,24 +106,83 @@
   var heroTrack = rotator ? rotator.querySelector('[data-hero-track]') : null;
   var heroLead = rotator ? rotator.querySelector('[data-hero-lead]') : null;
   var heroTail = rotator ? rotator.querySelector('[data-hero-tail]') : null;
+  var heroWord = rotator ? rotator.querySelector('.hero-word') : null;
 
-  if (rotator && heroTrack && heroLead && heroTail && !reduceMotion &&
+  if (rotator && heroTrack && heroLead && heroTail && heroWord &&
       heroTrack.children.length === HERO_FRAMES.length + 1) {
     var heroIndex = 0;
     var heroH1 = rotator.closest('h1');
+    var heroWidths = [];
+    var heroPad = 0;
 
     var reserveHeroHeight = function () {
       if (!heroH1) return;
-      var measured = heroH1.offsetHeight;
-      var previous = parseFloat(heroH1.style.minHeight) || 0;
-      heroH1.style.minHeight = Math.max(measured, previous) + 'px';
+      var savedIndex = heroIndex;
+      var maxHeight = 0;
+      heroWord.style.transition = 'none';
+      for (var i = 0; i < HERO_FRAMES.length; i += 1) {
+        heroLead.textContent = HERO_FRAMES[i].lead;
+        heroTail.textContent = HERO_FRAMES[i].tail;
+        if (heroWidths[i]) heroWord.style.width = Math.ceil(heroWidths[i] + heroPad) + 'px';
+        maxHeight = Math.max(maxHeight, heroH1.offsetHeight);
+      }
+      heroLead.textContent = HERO_FRAMES[savedIndex].lead;
+      heroTail.textContent = HERO_FRAMES[savedIndex].tail;
+      if (heroWidths[savedIndex]) heroWord.style.width = Math.ceil(heroWidths[savedIndex] + heroPad) + 'px';
+      void heroWord.offsetHeight;
+      heroWord.style.transition = '';
+      heroH1.style.minHeight = maxHeight + 'px';
     };
+
+    var measureHeroWords = function () {
+      try {
+        var pillStyle = window.getComputedStyle(heroWord);
+        var itemStyle = window.getComputedStyle(heroTrack.children[0]);
+        var pad = parseFloat(pillStyle.paddingLeft) + parseFloat(pillStyle.paddingRight) +
+          parseFloat(itemStyle.paddingLeft) + parseFloat(itemStyle.paddingRight);
+        var widths = Array.prototype.map.call(heroTrack.children, function (item) {
+          var range = document.createRange();
+          range.selectNodeContents(item);
+          return range.getBoundingClientRect().width;
+        });
+        if (!isNaN(pad) && widths.length) {
+          heroPad = pad;
+          heroWidths = widths;
+        }
+      } catch (err) {
+        heroWidths = [];
+      }
+    };
+
+    var applyHeroWidth = function (index) {
+      var width = heroWidths[index];
+      if (!width) return;
+      heroWord.style.width = Math.ceil(width + heroPad) + 'px';
+    };
+
+    var refreshTid = 0;
+    var refreshHeroMetrics = function () {
+      window.clearTimeout(refreshTid);
+      refreshTid = window.setTimeout(function () {
+        measureHeroWords();
+        applyHeroWidth(heroIndex);
+        reserveHeroHeight();
+      }, 120);
+    };
+
+    measureHeroWords();
+    applyHeroWidth(heroIndex);
     reserveHeroHeight();
+
     if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
       document.fonts.ready.then(function () {
-        if (heroIndex === 0) reserveHeroHeight();
+        measureHeroWords();
+        applyHeroWidth(heroIndex);
+        reserveHeroHeight();
       });
     }
+    window.addEventListener('load', refreshHeroMetrics);
+    window.addEventListener('resize', refreshHeroMetrics);
 
     window.setInterval(function () {
       var next = (heroIndex + 1) % HERO_FRAMES.length;
@@ -137,6 +196,7 @@
         heroLead.textContent = HERO_FRAMES[next].lead;
         heroTail.textContent = HERO_FRAMES[next].tail;
         heroTrack.style.setProperty('--hero-index', displayIndex);
+        applyHeroWidth(displayIndex);
         rotator.classList.remove('is-changing');
 
         if (wrap) {

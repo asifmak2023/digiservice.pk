@@ -3694,19 +3694,21 @@ main .bg-signal.rounded-3xl {
 }
 
 .hero-word[data-e="iL06K"] {
-  --hero-row: 1.25em;
+  --hero-row: 1.42em;
   display: inline-block;
   overflow: hidden;
-  vertical-align: -0.3em;
+  vertical-align: -0.185em;
+  width: auto;
   height: var(--hero-row);
   line-height: var(--hero-row);
-  margin: -0.06em 0.03em;
+  margin: -0.14em 0.03em;
   padding: 0 0.16em;
   border-radius: 0.16em;
   background-color: var(--color-signal);
   color: #3a2415 !important;
   -webkit-text-fill-color: #3a2415 !important;
   text-align: left;
+  transition: width .5s cubic-bezier(.22, .61, .36, 1);
 }
 
 .hero-word__track {
