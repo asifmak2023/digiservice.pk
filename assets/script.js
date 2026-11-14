@@ -160,7 +160,7 @@
         if (String(value).trim()) lines.push(key + ': ' + value);
       });
       var name = (data.get('First Name') || '') + ' ' + (data.get('Last Name') || '');
-      var subject = 'Custom quote request' + (name.trim() ? ' - ' + name.trim() : '');
+      var subject = (form.getAttribute('data-subject') || 'Custom quote request') + (name.trim() ? ' - ' + name.trim() : '');
       window.location.href = 'mailto:hello@digiservice.pk?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
     });
   });
