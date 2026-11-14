@@ -248,6 +248,80 @@
     else if (themeMedia.addListener) themeMedia.addListener(onSystemTheme);
   }
 
+  var articleBody = document.querySelector('.article-body');
+
+  if (articleBody) {
+    var progress = document.createElement('div');
+    progress.className = 'reading-progress';
+    progress.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(progress);
+
+    var progressTicking = false;
+    var updateProgress = function () {
+      var rect = articleBody.getBoundingClientRect();
+      var total = rect.height - window.innerHeight;
+      var scrolled = Math.min(Math.max(-rect.top, 0), Math.max(total, 1));
+      var ratio = total > 0 ? scrolled / total : 0;
+      progress.style.transform = 'scaleX(' + ratio + ')';
+      progressTicking = false;
+    };
+    var onArticleScroll = function () {
+      if (progressTicking) return;
+      progressTicking = true;
+      window.requestAnimationFrame(updateProgress);
+    };
+    window.addEventListener('scroll', onArticleScroll, { passive: true });
+    window.addEventListener('resize', onArticleScroll);
+    updateProgress();
+
+    var tocHeadings = articleBody.querySelectorAll('h2[id]');
+    if (tocHeadings.length >= 3) {
+      var toc = document.createElement('nav');
+      toc.className = 'article-toc';
+      toc.setAttribute('aria-label', 'On this page');
+
+      var tocTitle = document.createElement('p');
+      tocTitle.className = 'article-toc__title';
+      tocTitle.textContent = 'On this page';
+
+      var tocList = document.createElement('ol');
+      Array.prototype.forEach.call(tocHeadings, function (heading) {
+        var item = document.createElement('li');
+        var link = document.createElement('a');
+        link.href = '#' + heading.id;
+        link.textContent = heading.textContent.trim();
+        item.appendChild(link);
+        tocList.appendChild(item);
+      });
+
+      toc.appendChild(tocTitle);
+      toc.appendChild(tocList);
+
+      var articleLayout = document.createElement('div');
+      articleLayout.className = 'article-layout';
+      var articleParent = articleBody.parentNode;
+      articleParent.insertBefore(articleLayout, articleBody);
+      articleLayout.appendChild(toc);
+      articleLayout.appendChild(articleBody);
+    }
+  }
+
+  var toTop = document.createElement('button');
+  toTop.type = 'button';
+  toTop.className = 'back-to-top';
+  toTop.setAttribute('aria-label', 'Back to top');
+  toTop.innerHTML = '<span aria-hidden="true">&uarr;</span>';
+  document.body.appendChild(toTop);
+
+  var updateToTop = function () {
+    toTop.classList.toggle('is-visible', window.scrollY > 700);
+  };
+  window.addEventListener('scroll', updateToTop, { passive: true });
+  updateToTop();
+  toTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+  });
+
   document.querySelectorAll('[data-quote-form]').forEach(function (form) {
     form.addEventListener('submit', function (event) {
       event.preventDefault();
