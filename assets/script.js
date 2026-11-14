@@ -285,11 +285,17 @@
       tocTitle.textContent = 'On this page';
 
       var tocList = document.createElement('ol');
+      var tocLinks = {};
       Array.prototype.forEach.call(tocHeadings, function (heading) {
         var item = document.createElement('li');
         var link = document.createElement('a');
         link.href = '#' + heading.id;
-        link.textContent = heading.textContent.trim();
+        var label = heading.textContent.trim();
+        label = label.replace(/^(\s*\d+[.)]\s*)?([a-z])/, function (match, prefix, letter) {
+          return (prefix || '') + letter.toUpperCase();
+        });
+        link.textContent = label;
+        tocLinks[heading.id] = link;
         item.appendChild(link);
         tocList.appendChild(item);
       });
@@ -303,6 +309,32 @@
       articleParent.insertBefore(articleLayout, articleBody);
       articleLayout.appendChild(toc);
       articleLayout.appendChild(articleBody);
+
+      var activeHeading = null;
+      var updateToc = function () {
+        var offset = 120;
+        var active = tocHeadings.length ? tocHeadings[0].id : null;
+        for (var i = 0; i < tocHeadings.length; i++) {
+          if (tocHeadings[i].getBoundingClientRect().top <= offset) active = tocHeadings[i].id;
+          else break;
+        }
+        if (active === activeHeading) return;
+        if (activeHeading && tocLinks[activeHeading]) tocLinks[activeHeading].classList.remove('is-active');
+        if (active && tocLinks[active]) tocLinks[active].classList.add('is-active');
+        activeHeading = active;
+      };
+      var tocTicking = false;
+      var onTocScroll = function () {
+        if (tocTicking) return;
+        tocTicking = true;
+        window.requestAnimationFrame(function () {
+          updateToc();
+          tocTicking = false;
+        });
+      };
+      window.addEventListener('scroll', onTocScroll, { passive: true });
+      window.addEventListener('resize', onTocScroll);
+      updateToc();
     }
   }
 

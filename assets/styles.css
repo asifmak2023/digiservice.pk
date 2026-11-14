@@ -3997,6 +3997,10 @@ main .bg-signal.rounded-3xl {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.article-toc a.is-active {
+  color: var(--color-primary);
+  font-weight: 600;
+}
 
 /* Back to top */
 .back-to-top {
