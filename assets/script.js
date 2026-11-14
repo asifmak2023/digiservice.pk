@@ -95,6 +95,62 @@
     }, 2600);
   }
 
+  var HERO_FRAMES = [
+    { lead: 'Software that ships on time and stays', word: 'running', tail: '.' },
+    { lead: 'Digital products designed, built and', word: 'shipped', tail: ' on schedule.' },
+    { lead: 'Systems that are still', word: 'supported', tail: ' years later.' },
+    { lead: 'Platforms that keep', word: 'evolving', tail: ' as you grow.' }
+  ];
+
+  var rotator = document.querySelector('[data-hero-rotator]');
+  var heroTrack = rotator ? rotator.querySelector('[data-hero-track]') : null;
+  var heroLead = rotator ? rotator.querySelector('[data-hero-lead]') : null;
+  var heroTail = rotator ? rotator.querySelector('[data-hero-tail]') : null;
+
+  if (rotator && heroTrack && heroLead && heroTail && !reduceMotion &&
+      heroTrack.children.length === HERO_FRAMES.length + 1) {
+    var heroIndex = 0;
+    var heroH1 = rotator.closest('h1');
+
+    var reserveHeroHeight = function () {
+      if (!heroH1) return;
+      var measured = heroH1.offsetHeight;
+      var previous = parseFloat(heroH1.style.minHeight) || 0;
+      heroH1.style.minHeight = Math.max(measured, previous) + 'px';
+    };
+    reserveHeroHeight();
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+      document.fonts.ready.then(function () {
+        if (heroIndex === 0) reserveHeroHeight();
+      });
+    }
+
+    window.setInterval(function () {
+      var next = (heroIndex + 1) % HERO_FRAMES.length;
+      var wrap = next === 0;
+      var displayIndex = wrap ? HERO_FRAMES.length : next;
+
+      rotator.classList.add('is-changing');
+
+      window.setTimeout(function () {
+        heroIndex = next;
+        heroLead.textContent = HERO_FRAMES[next].lead;
+        heroTail.textContent = HERO_FRAMES[next].tail;
+        heroTrack.style.setProperty('--hero-index', displayIndex);
+        rotator.classList.remove('is-changing');
+
+        if (wrap) {
+          window.setTimeout(function () {
+            heroTrack.style.transition = 'none';
+            heroTrack.style.setProperty('--hero-index', 0);
+            void heroTrack.offsetHeight;
+            heroTrack.style.transition = '';
+          }, 700);
+        }
+      }, 300);
+    }, 3200);
+  }
+
   document.querySelectorAll('[data-quote-form]').forEach(function (form) {
     form.addEventListener('submit', function (event) {
       event.preventDefault();

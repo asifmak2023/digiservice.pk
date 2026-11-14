@@ -3670,3 +3670,59 @@ main .bg-signal.rounded-3xl {
     transform: none !important;
   }
 }
+
+/* Hero rotating word loader (Uiverse-style vertical mask) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hero-rotator [data-hero-lead],
+.hero-rotator [data-hero-tail] {
+  transition: opacity .3s ease;
+}
+.hero-rotator.is-changing [data-hero-lead],
+.hero-rotator.is-changing [data-hero-tail] {
+  opacity: .12;
+}
+
+.hero-word[data-e="iL06K"] {
+  --hero-row: 1.25em;
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: -0.3em;
+  height: var(--hero-row);
+  line-height: var(--hero-row);
+  margin: -0.06em 0.03em;
+  padding: 0 0.16em;
+  border-radius: 0.16em;
+  background-color: var(--color-signal);
+  color: #3a2415 !important;
+  -webkit-text-fill-color: #3a2415 !important;
+  text-align: left;
+}
+
+.hero-word__track {
+  display: block;
+  transform: translateY(calc(var(--hero-index, 0) * -1 * var(--hero-row)));
+  transition: transform .62s cubic-bezier(.76, 0, .24, 1);
+  will-change: transform;
+}
+.hero-word__item {
+  display: block;
+  height: var(--hero-row);
+  line-height: var(--hero-row);
+  padding: 0 0.02em;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-word__track { transition: none !important; }
+}
